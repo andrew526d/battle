@@ -1,9 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include "ship.h"
-#include "field.h"
 
-
+/*
 Ship::Ship(int len)
 {
 	if(len<1 || len>FIELD_SIZE)
@@ -159,7 +158,7 @@ direction Fleet::state_to_dir(int state)
 	int dir = (state/(FIELD_SIZE * FIELD_SIZE));
 	return (direction)dir;
 }
-
+*/
 
 
 
