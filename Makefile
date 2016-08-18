@@ -1,8 +1,8 @@
-all: ship.o field.o main.o enumerator.o *.h
-	g++ -o battle ship.o field.o enumerator.o main.o
+all: ship.o field.o enumerator.o game.o main.o *.h
+	g++ -o battle ship.o field.o enumerator.o game.o main.o
 
-test: ship.o field.o test.o enumerator.o *.h
-	g++ -o test ship.o field.o test.o enumerator.o
+test: ship.o field.o enumerator.o game.o test.o *.h
+	g++ -o test ship.o field.o enumerator.o game.o test.o
 	
 main.o: main.cpp *.h
 	g++ -c main.cpp
@@ -18,3 +18,6 @@ field.o: field.cpp *.h
 	
 enumerator.o: enumerator.cpp *.h
 	g++ -c enumerator.cpp 
+	
+game.o: game.cpp *.h
+	g++ -c game.cpp 
