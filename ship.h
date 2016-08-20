@@ -4,32 +4,37 @@
 
 class Cell
 {
+public:
+	void set_x(int in_x);
+	void set_y(int in_y);
+	void set_val(cell_val in_val);
+	int get_x() const;
+	int get_y() const;
+	cell_val get_val() const;	
 
 private:
 	int x;
 	int y;
-	int val;
+	cell_val val;
 };
 
-/*
+
 class Ship
 {
 public:
-	Ship(int len);		// from 1 to FIELD_SIZE-1
-
-	int set_pos(int x, int y, direction dir);
-	int set_len(int len);	
-	
+	void set_x(int in_x);
+	void set_y(int in_y);
+	void set_len(int in_len);
+	void set_dir(direction in_dir);
 	int get_x() const;
 	int get_y() const;
 	int get_len() const;
-	direction get_dir() const;
+	direction get_dir() const;	
 private:
-	int ship_x;			//x coordiname
-	int ship_y;			//y coordinate
-	int ship_len;		//length
-	direction ship_dir;	//direction
+	int x;			//x coordiname
+	int y;			//y coordinate
+	int len;		//length
+	direction dir;	//direction
 };
-*/
 
 #endif

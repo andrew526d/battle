@@ -3,30 +3,31 @@
 
 #include <iostream>
 #include "const.h"
+#include "ship.h"
 
 using std::ostream;
 using std::cout;
 using std::endl;
 
+
 class Field
 {
 public:
-	bool is_end();
+	Field();
+	~Field(){};
+
+	void fill(cell_val val);						//Заполняет поле значением val
+	void set_cell(const Cell& cell);
+	Cell get_cell(int in_x, int in_y) const;
+	vector<Ship> get_all_psbl(int len);				//возвращает все валидные варианты размещения корабля длины len
+	void add_ship(const Ship &ship);				//добавляет корабль на поле
+	bool is_end() const;
 
 private:
-	int buf[FIELD_SIZE][FIELD_SIZE];
-
+	bool check_ship(const Ship& ship);					//true если корабль может быть размещен
+	cell_val buf[FIELD_SIZE][FIELD_SIZE];
 };
 
-class FieldShips : Field
-{
-	
-};
-
-class FieldEmpty : Field
-{
-	
-};
 
 
 

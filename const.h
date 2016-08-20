@@ -1,24 +1,45 @@
 #ifndef CONST_H
 #define CONST_H
-// --------------- Константы и макросы ---------
+#include <string>
+#include <vector>
 
-#define FIELD_SIZE 10	//Размер поля
+using std::string;
+using std::vector;
 
-enum cell_val			//Возможные значения клеток
+// --------------- РљРѕРЅСЃС‚Р°РЅС‚С‹ Рё РјР°РєСЂРѕСЃС‹ ---------
+
+#define FIELD_SIZE 10	//Р Р°Р·РјРµСЂ РїРѕР»СЏ
+
+const extern vector<int> ship_types;
+
+
+
+
+// -------------- Exception Class -------------
+struct Error
 {
+	string err_txt;
+};
+
+
+enum cell_val			//Р’РѕР·РјРѕР¶РЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РєР»РµС‚РѕРє
+{
+	CELL_MIN,
 	CELL_EMPTY,
 	CELL_WOUND,
 	CELL_KILL,
-	CELL_UNKNOWN
+	CELL_MY_SHIP,
+	CELL_UNKNOWN,
+	CELL_MAX
 };
 
-enum direction			//Направление корабля (вертикальное или горизонтальное)
+enum direction			//РќР°РїСЂР°РІР»РµРЅРёРµ РєРѕСЂР°Р±Р»СЏ (РІРµСЂС‚РёРєР°Р»СЊРЅРѕРµ РёР»Рё РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕРµ)
 {
 	DIR_HOR,
 	DIR_VER
 };	
  
-enum game_st			//статус игры
+enum game_st			//СЃС‚Р°С‚СѓСЃ РёРіСЂС‹
 {
 	GAME_UNKNOWN,
 	GAME_WIN,
