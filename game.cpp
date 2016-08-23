@@ -497,7 +497,6 @@ cell_val Game::check(const Cell& cell)
 		{
 			tmp_cell.set_val(CELL_KILL);
 			en_shoots.kill(tmp_cell);
-			my_ships.kill(tmp_cell);
 			return CELL_KILL;
 		}
 		else
