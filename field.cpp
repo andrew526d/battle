@@ -119,8 +119,6 @@ void Field::add_ship(const Ship& ship)
  		else
  			ymax = y+len;
  	}
-
-	cout << xmin << " " << xmax << "      " << ymin << " " << ymax << endl;
 	
  	//    set empty sells
  	for(i=xmin;i<=xmax;i++)
@@ -176,7 +174,164 @@ bool Field::check_ship(const Ship& ship)
 	return true;
 }
 
-bool Field::is_end() const
+
+bool Field::is_killed(const Cell& cell)
 {
+	int x,y;
 	
+	// проверяем слева
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && x>0)
+	{
+		x--;
+		if(buf[x][y] == CELL_MY_SHIP)
+			return false;
+	}
+	
+	// проверяем справа
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && x<FIELD_SIZE-1)
+	{
+		x++;
+		if(buf[x][y] == CELL_MY_SHIP)
+			return false;
+	}
+	
+	// проверяем сверху
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && y>0)
+	{
+		y--;
+		if(buf[x][y] == CELL_MY_SHIP)
+			return false;
+	}
+	
+	// проверяем справа
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && y<FIELD_SIZE-1)
+	{
+		y++;
+		if(buf[x][y] == CELL_MY_SHIP)
+			return false;
+	}
+
+	return true;
+	
+}
+
+
+int Field::kill(const Cell& cell)
+{	
+	int x,y,len=1,flag_x=0, flag_y=0;
+	int x_min, y_min;
+	direction dir;
+	Ship ship;
+	
+	// проверяем слева
+	x = cell.get_x();
+	y = cell.get_y();
+	x_min = x;
+	y_min = y;
+	while(buf[x][y] != CELL_EMPTY && x>0)
+	{
+		x--;
+		if(buf[x][y] == CELL_WOUND)
+		{
+			len++;
+			dir = DIR_HOR;
+			x_min = x;
+			flag_x = 1;
+		}
+	}
+	
+	// проверяем справа
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && x<FIELD_SIZE-1)
+	{
+		x++;
+		if(buf[x][y] == CELL_WOUND)
+		{
+			len++;
+			dir = DIR_HOR;
+			flag_x = 1;
+		}
+	}
+	
+	// проверяем сверху
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && y>0)
+	{
+		y--;
+		if(buf[x][y] == CELL_WOUND)
+		{
+			len++;
+			dir = DIR_VER;
+			y_min = y;
+			flag_y = 1;
+		}
+	}
+	
+	// проверяем снизу
+	x = cell.get_x();
+	y = cell.get_y();
+	while(buf[x][y] != CELL_EMPTY && y<FIELD_SIZE-1)
+	{
+		y++;
+		if(buf[x][y] == CELL_WOUND)
+		{
+			len++;
+			dir = DIR_VER;
+			flag_y = 1;
+		}
+	}
+	
+	if(flag_x && flag_y)
+	{
+		Error err;
+		err.err_txt = "Ошибка в функции Field::kill. Крестообразный корабль";
+		throw(err);
+		
+	}
+	
+	//  ---- добавляем корабль ----------------
+	ship.set_x(x_min);
+	ship.set_y(y_min);
+	ship.set_len(len);
+	ship.set_dir(dir);
+	
+	cout << x_min << y_min << " " << len << endl;
+	add_ship(ship);
+
+	int i,j;
+	for(i=0;i<FIELD_SIZE;i++)
+		for(j=0;j<FIELD_SIZE;j++)
+			if(buf[i][j] == CELL_MY_SHIP)
+				buf[i][j] = CELL_KILL;
+		
+	return len;
+}
+
+bool Field::get_wound(Cell &cell)
+{
+	int i,j;
+	
+	for(i=0;i<FIELD_SIZE;i++)
+		for(j=0;j<FIELD_SIZE;j++)
+		{
+			if(buf[i][j] == CELL_WOUND)
+			{
+				cell.set_x(i);
+				cell.set_y(j);
+				cell.set_val(CELL_WOUND);
+				return true;
+			}
+		}
+		
+	return false;
 }

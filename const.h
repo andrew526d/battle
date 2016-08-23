@@ -6,6 +6,8 @@
 using std::string;
 using std::vector;
 
+#define DEBUG 1
+
 // --------------- Константы и макросы ---------
 
 #define FIELD_SIZE 10	//Размер поля

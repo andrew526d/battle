@@ -20,8 +20,10 @@ public:
 	void set_cell(const Cell& cell);
 	Cell get_cell(int in_x, int in_y) const;
 	vector<Ship> get_all_psbl(int len);				//возвращает все валидные варианты размещения корабля длины len
-	void add_ship(const Ship &ship);				//добавляет корабль на поле
-	bool is_end() const;
+	void add_ship(const Ship &ship);	//добавляет корабль на поле
+	bool is_killed(const Cell& cell);				//Проверяет, убит ли корабль
+	int kill(const Cell& cell);						//Оформляет убитый корабль, возвращает его длину
+	bool get_wound(Cell &cell);						//Находит клетку CELL_WOUND
 
 private:
 	bool check_ship(const Ship& ship);					//true если корабль может быть размещен
