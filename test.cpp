@@ -6,28 +6,43 @@
 
 using std::cout;
 using std::vector;
+using std::reference_wrapper;
 
+void test_print();
 int main() 
 {
-	int x,y,state;
-	direction dir;
-	
-	vector<int> ships;
-	ships.push_back(3);
-	
-	Fleet f(ships);
-	
-	//----------------------
-	x = 9; y = 9; dir = ver;
-	cout << x << "  " << y << "  " << dir << endl;
-	state = f.pos_to_state(x,y,dir);
-	
-	x = f.state_to_x(state);
-	y = f.state_to_y(state);
-	dir = f.state_to_dir(state);
-	
-	cout << x << "  " << y << "  " << dir << endl;
-	
 
-	return 0;
+	
+	try
+	{
+		test_print();
+	}
+	
+	catch(Error err)
+	{
+		cout << "Сбой в программе: " << err.err_txt << endl;
+	}
+
+}
+
+void test_print()
+{
+	Field f1;
+	Cell c1;
+	int i;
+	vector<reference_wrapper<Field>> fields;
+
+	fields.push_back(f1);
+	fields.push_back(f1);
+	fields.push_back(f1);
+		
+	for(i = CELL_MIN + 1 ; i<CELL_MAX; i++)
+	{
+		c1.set_x(i);
+		c1.set_y(0);
+		c1.set_val((cell_val)i);
+		f1.set_cell(c1);
+	}
+		
+	print(fields);
 }

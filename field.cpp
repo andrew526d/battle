@@ -7,7 +7,7 @@ using std::to_string;
 
 Field::Field()
 {
-
+	fill(CELL_UNKNOWN);
 }
 
 void Field::fill(cell_val val)
@@ -138,6 +138,48 @@ void Field::add_ship(const Ship& ship)
  			buf[x][j] = CELL_MY_SHIP;
  	}
 
+}
+
+void print(const vector<reference_wrapper<Field>> &fields)
+{
+	int i,j,k;
+	cell_val val;
+	char c;
+	Field current;
+	Cell cell;
+
+	if(fields.size()==0)
+		return;
+
+	for(k=0;k<fields.size();k++)
+		cout << "  a b c d e f g h i j     ";
+	cout << endl;
+	
+	for(i=0;i<FIELD_SIZE;i++)
+	{
+		for(k=0;k<fields.size();k++)
+		{
+			cout << i << " ";
+			current = fields[k];
+			for(j=0;j<FIELD_SIZE;j++)
+			{
+				val = current.get_cell(j,i).get_val();
+				switch(val)
+				{
+					case CELL_EMPTY: c = '-'; break;
+					case CELL_WOUND: c = '+'; break;
+					case CELL_KILL: c = 'X'; break;
+					case CELL_MY_SHIP: c = 'S'; break;
+					case CELL_UNKNOWN: c = '.'; break;
+					default: c = '?';
+				}
+				cout << c << " ";
+			}
+			cout << "    ";
+		}
+		cout << endl;
+	}
+		
 }
 
 bool Field::check_ship(const Ship& ship)

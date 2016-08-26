@@ -2,12 +2,15 @@
 #define FIELD_H 
 
 #include <iostream>
+#include <functional>
 #include "const.h"
 #include "ship.h"
 
 using std::ostream;
 using std::cout;
 using std::endl;
+using std::vector;
+using std::reference_wrapper;
 
 
 class Field
@@ -24,6 +27,7 @@ public:
 	bool is_killed(const Cell& cell);				//Проверяет, убит ли корабль
 	int kill(const Cell& cell);						//Оформляет убитый корабль, возвращает его длину
 	bool get_wound(Cell &cell);						//Находит клетку CELL_WOUND
+	friend void print(const vector<reference_wrapper<Field>> &fields);	//Выводит на экран поля
 
 private:
 	bool check_ship(const Ship& ship);					//true если корабль может быть размещен

@@ -487,7 +487,7 @@ cell_val Game::check(const Cell& cell)
 		en_shoots.set_cell(tmp_cell);
 		return CELL_EMPTY;
 	}
-	else if(val == CELL_MY_SHIP)
+	else if(val == CELL_MY_SHIP || val == CELL_WOUND)
 	{
 		my_ship_cells --;
 		tmp_cell.set_val(CELL_WOUND);

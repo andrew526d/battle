@@ -4,7 +4,7 @@ all: ship.o field.o const.o game.o main.o *.h
 	g++ -o battle ship.o field.o const.o game.o main.o -std=c++11
 
 test: ship.o field.o const.o game.o test.o *.h
-	g++ -o test ship.o field.o const.o game.o test.o -std=c++11
+	g++ -o test ship.o field.o const.o game.o test.o -std=c++11 -g
 
 main.o: main.cpp *.h
 	g++ -c main.cpp -std=c++11
