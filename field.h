@@ -4,7 +4,6 @@
 #include <iostream>
 #include <functional>
 #include "const.h"
-#include "ship.h"
 
 using std::ostream;
 using std::cout;
@@ -13,24 +12,40 @@ using std::vector;
 using std::reference_wrapper;
 
 
+
 class Field
 {
 public:
 	Field();
 	~Field(){};
 
-	void fill(cell_val val);						//Заполняет поле значением val
-	void set_cell(const Cell& cell);
-	Cell get_cell(int in_x, int in_y) const;
-	vector<Ship> get_all_psbl(int len);				//возвращает все валидные варианты размещения корабля длины len
-	void add_ship(const Ship &ship);	//добавляет корабль на поле
-	bool is_killed(const Cell& cell);				//Проверяет, убит ли корабль
-	int kill(const Cell& cell);						//Оформляет убитый корабль, возвращает его длину
-	bool get_wound(Cell &cell);						//Находит клетку CELL_WOUND
-	friend void print(const vector<reference_wrapper<Field>> &fields);	//Выводит на экран поля
+	//Заполняет поле значением val
+	void fill(cell_val val);						
+	
+	//    Функции для работы с клетками
+	void set_cell(int x, int y, cell_val val);
+	cell_val get_cell(int x, int y) const;
+	cell_val get_right(int x, int y) const;
+	cell_val get_left(int x, int y) const;
+	cell_val get_up(int x, int y) const;
+	cell_val get_down(int x, int y) const;
+	
+	//    Функции для работы с кораблями
+	bool check_ship(const Ship& ship) const;				//true если корабль может быть размещен	
+	vector<Ship> get_all_psbl(int len) const;				//возвращает все валидные варианты размещения корабля длины len
+	void add_ship(const Ship &ship, cell_val val);			//добавляет корабль на поле со значениями val	
+	bool check_killed(int x, int y, Ship &ship) const;		//Проверяет, убит ли корабль. Если убит, до возвращает его параметры в ship
+	int kill(int x, int y);									//Оформляет убитый корабль, возвращает его длину
+	
+	// вывод на экран
+	friend void print(const vector<Field> fields);	//Выводит на экран поля
+	
+	// вспомогательные функции
+	bool get_wound(Cell &cell);						//Находит клетку CELL_WOUND, если такая есть
 
 private:
-	bool check_ship(const Ship& ship);					//true если корабль может быть размещен
+	void check_coord(int x) const;
+
 	cell_val buf[FIELD_SIZE][FIELD_SIZE];
 };
 

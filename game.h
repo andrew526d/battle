@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include "const.h"
-#include "ship.h"
 #include "field.h"
 
 using std::vector;
@@ -37,36 +36,29 @@ public:
 	//вычисляет координаты нового корабля
 	Cell shoot_new();	
 
-	//вычисляет координаты старого корабля
-	Cell shoot_old(const Cell& cell);	
+	//добивает рененый корабль
+	Cell shoot_wounded(int x, int y);	
 
 	
 	//добавляет результаты выстрела в my_shoots
-	void update(const Cell& cell);
+	void update(int x, int y, cell_val val);
 
 	//запрашивает значение ячейки из ships, добавляет в enemy_shoots
-	cell_val check(const Cell& cell);	
+	cell_val check(int x, int y);	
 	
 	//проверяет, не закончилась ли игра
 	game_st get_status();
 
 private:
-	Field my_ships;			// Поле с нашими кораблями
-	Field my_shoots;		// Поле с нашими выстрелами
-	Field en_shoots;		// Поле с выстрелами соперника (enemy)
-	void del_ship(int len);	// Удаляет из live_ships корабль длины len;
+	Field my_ships;				// Поле с нашими кораблями
+	Field my_shoots;			// Поле с нашими выстрелами
+	Field en_shoots;			// Поле с выстрелами соперника (enemy)
+	void del_ship(int len);		// Удаляет из live_ships корабль длины len;
 	int get_max_ship() const;		// Возращает длину самого большого живого корабля
 	
-	//Возвращает значения соседних ячеек
-	cell_val get_left(const Cell& cell);
-	cell_val get_right(const Cell& cell);
-	cell_val get_up(const Cell& cell);
-	cell_val get_down(const Cell& cell);
-	
-	
-	vector<int> live_ships;	// Оставшиеся в живых корабли
-	int my_ship_cells;		// Всего занятых клеток нашими кораблями
-	int en_ship_cells;		// Всего занятых клеток вражескими кораблями
+	vector<int> live_ships;		// Оставшиеся в живых корабли
+	int my_ship_cells;			// Всего занятых клеток нашими кораблями
+	int en_ship_cells;			// Всего занятых клеток вражескими кораблями
 };
 
 #endif

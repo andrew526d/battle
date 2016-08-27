@@ -1,12 +1,17 @@
 #include "game.h"
 #include <iostream>
 #include <string>
+#include <functional>
+#include <vector>
+
 
 using std::cin;
 using std::cout;
 using std::string;
 using std::stoi;
 using std::to_string;
+using std::vector;
+using std::reference_wrapper;
 
 Game::Game()
 {
@@ -32,82 +37,28 @@ Game::~Game()
 
 void Game::out_fields() const
 {
-	int i,j;
-	cell_val val;
-	
-	char c;
+
+	vector<Field> fields;
+
+	fields.push_back(en_shoots);
+	fields.push_back(my_shoots);
+//	fields.push_back(my_ships);
 	
 	cout << endl;
-	cout << "      Мои корабли                Ваши корабли    " << endl;
-	cout << "  a b c d e f g h i j        a b c d e f g h i j " << endl;
-	for(i=0;i<FIELD_SIZE;i++)
-	{
-		cout << i << " ";
-		for(j=0;j<FIELD_SIZE;j++)
-		{
-			val = en_shoots.get_cell(j,i).get_val();
-			switch(val)
-			{
-				case CELL_EMPTY: c = '-'; break;
-				case CELL_WOUND: c = '+'; break;
-				case CELL_KILL: c = 'X'; break;
-				case CELL_MY_SHIP: c = 'S'; break;
-				case CELL_UNKNOWN: c = '.'; break;
-				default: c = '?';
-			}
-			cout << c << " ";
-		}
-		
-		cout <<  "     " << i << " ";
-		for(j=0;j<FIELD_SIZE;j++)
-		{
-			val = my_shoots.get_cell(j,i).get_val();
-			switch(val)
-			{
-				case CELL_EMPTY: c = '-'; break;
-				case CELL_WOUND: c = '+'; break;
-				case CELL_KILL: c = 'X'; break;
-				case CELL_MY_SHIP: c = 'S'; break;
-				case CELL_UNKNOWN: c = '.'; break;
-				default: c = '?';
-			}
-			cout << c << " ";
-		}
-
-		cout << endl;
-	}
+	cout << "     Ваши выстрелы             Мои выстрелы               Мои корабли " << endl;
+	print(fields);
 	cout << endl;
 }				
 
 void Game::out_my_ships() const
 {
-	int i,j;
-	cell_val val;
+	vector<Field> fields;
 	
-	char c;
+	fields.push_back(my_ships);
 	
 	cout << endl;
-	cout << "  a b c d e f g h i j " << endl;
-	for(i=0;i<FIELD_SIZE;i++)
-	{
-		cout << i << " ";
-		for(j=0;j<FIELD_SIZE;j++)
-		{
-			val = my_ships.get_cell(j,i).get_val();
-			switch(val)
-			{
-				case CELL_EMPTY: c = '-'; break;
-				case CELL_WOUND: c = '+'; break;
-				case CELL_KILL: c = 'X'; break;
-				case CELL_MY_SHIP: c = 'S'; break;
-				case CELL_UNKNOWN: c = '.'; break;
-				default: c = '?';
-			}
-			cout << c << " ";
-		}
-
-		cout << endl;
-	}
+	cout << "     Мои корабли " << endl;
+	print(fields);
 	cout << endl;	
 }
 
@@ -115,8 +66,8 @@ void Game::out_coord(const Cell& cell) const
 {
 	char c1,c2;
 	
-	c1 = 'a' + cell.get_x();
-	c2 = '0' + cell.get_y();
+	c1 = 'a' + cell.x;
+	c2 = '0' + cell.y;
 	
 	cout << "Мой ход: " << c1 << c2 << endl;	
 }
@@ -124,8 +75,7 @@ void Game::out_coord(const Cell& cell) const
 Cell Game::in_coord()
 {
 	string str;
-	int x,y;
-	char c1,c2;
+	char x,y;
 	Cell cell;
 	
 	
@@ -141,18 +91,18 @@ Cell Game::in_coord()
 		}
 		else
 		{
-			c1 = str[0] - 'a';
-			c2 = str[1] - '0';
+			x = str[0] - 'a';
+			y = str[1] - '0';
 			
-			if(c1 < 0 || c1 > FIELD_SIZE || c1 < 0 || c2 > FIELD_SIZE)
+			if(x < 0 || x > FIELD_SIZE || y < 0 || y > FIELD_SIZE)
 			{
 				cout << "Неверное значение" << endl;
 				continue;
 			}
 			else
 			{
-				cell.set_x(c1);
-				cell.set_y(c2);
+				cell.x = (int)x;
+				cell.y = (int)y;
 				return cell;
 			}
 		}
@@ -216,6 +166,7 @@ void Game::init_ships()
 	Cell cell;
 	Ship ship;
 	
+	srand(time(0));
 	for(i=0;i<ship_types.size();i++)
 	{
 		len = ship_types[i];
@@ -223,22 +174,20 @@ void Game::init_ships()
 		psbl_count = psbl.size();		
 		select = rand() % psbl_count;
 		ship = psbl[select];
-		my_ships.add_ship(ship);
+		my_ships.add_ship(ship, CELL_SHIP);
 	}
 	
 	// Заполняет CELL_EMPTY вместо CELL_UNKNOWN
 	for(i=0;i<FIELD_SIZE;i++)
 		for(j=0;j<FIELD_SIZE;j++)
 		{
-			cell = my_ships.get_cell(i,j);
-			if(cell.get_val() == CELL_UNKNOWN)
+			if(my_ships.get_cell(i,j) == CELL_UNKNOWN)
 			{
-				cell.set_val(CELL_EMPTY);
-				my_ships.set_cell(cell);
+				my_ships.set_cell(i,j,CELL_EMPTY);
 			}
 		}
-	
 }
+
 
 Cell Game::shoot()
 {
@@ -246,7 +195,7 @@ Cell Game::shoot()
 	Cell wounded;
 	
 	if(my_shoots.get_wound(wounded))
-		new_shoot = shoot_old(wounded);
+		new_shoot = shoot_wounded(wounded.x, wounded.y);
 	else
 		new_shoot = shoot_new();
 	
@@ -261,7 +210,7 @@ Cell Game::shoot_new()
 	Field F;
 	Ship ship;
 	cell_val val;
-	Cell cell, tmp_cell;
+	Cell cell;
 	int count[FIELD_SIZE][FIELD_SIZE];
 	
 	len = get_max_ship();
@@ -269,20 +218,18 @@ Cell Game::shoot_new()
 		for(k=0;k<FIELD_SIZE;k++)
 			count[j][k] = 0;
 
-	
 	psbl = my_shoots.get_all_psbl(len);
 	psbl_count = psbl.size();		
 	for(i=0;i<psbl_count;i++)
 	{
 		F.fill(CELL_EMPTY);
 		ship = psbl[i];
-		F.add_ship(ship);
+		F.add_ship(ship, CELL_SHIP);
 		for(j=0;j<FIELD_SIZE;j++)
 			for(k=0;k<FIELD_SIZE;k++)
 			{
-				tmp_cell = F.get_cell(j,k);
-				val = tmp_cell.get_val();
-				if(val == CELL_MY_SHIP)
+				val = F.get_cell(j,k);
+				if(val == CELL_SHIP)
 					count[j][k]++;
 			}
 	}
@@ -294,142 +241,120 @@ Cell Game::shoot_new()
 			if(count[j][k]>max_val)
 			{
 				max_val = count[j][k];
-				cell.set_x(j);
-				cell.set_y(k);
+				cell.x = j;
+				cell.y = k;
 			}
 		}
 	
 	return cell;
 }	
 
-Cell Game::shoot_old(const Cell& prev)
+
+Cell Game::shoot_wounded(int x, int y)
 {
-	int x,y, flag_hor=0, flag_ver=0;
+	bool is_hor = false, is_ver = false;
+	
 	Cell cell, tmp_cell;
 	cell_val val;
 	direction dir;
 	
 	// ---- проверяем есть ли еще ранения------
-	if(get_left(prev) == CELL_WOUND || get_right(prev) == CELL_WOUND)
-		flag_hor = 1;
+	if(my_shoots.get_left(x,y) == CELL_WOUND || my_shoots.get_right(x,y) == CELL_WOUND)
+		is_hor = 1;
 	
-	if(get_up(prev) == CELL_WOUND || get_down(prev) == CELL_WOUND)
-		flag_ver = 1;
+	if(my_shoots.get_up(x,y) == CELL_WOUND || my_shoots.get_down(x,y) == CELL_WOUND)
+		is_ver = 1;
 	
 
 
 	//проверяем корректность
-	if(flag_hor && flag_ver)
+	if(is_hor && is_ver)
 	{
 		Error err;
 		err.err_txt = "Ошибка в функции Game::shoot_old. Крестообразный корабль";
 		throw(err);		
 	}
-
-	x = prev.get_x();
-	y = prev.get_y();
 	
 	// ---------------- выбираем клетку ----------
-	if(flag_hor)
-	{
-		cell.set_x(x);
-		cell.set_y(y);
-		
-		while(get_left(cell) == CELL_WOUND) // двигаемся влево
+	if(is_hor)
+	{	
+		while(my_shoots.get_left(x,y) == CELL_WOUND) // двигаемся влево
+			x--;
+		if(my_shoots.get_left(x,y) == CELL_UNKNOWN)
 		{
 			x--;
-			cell.set_x(x);
-		}
-		if(get_left(cell) == CELL_UNKNOWN)
-		{
-			x--;
-			cell.set_x(x);
+			cell.x = x;
+			cell.y = y;
 			return cell;
 		}
 		
-		x = prev.get_x();
-		cell.set_x(x);
-		while(get_right(cell) == CELL_WOUND) // двигаемся вправо
+		while(my_shoots.get_right(x,y) == CELL_WOUND) // двигаемся вправо
+			x++;
+		if(my_shoots.get_right(x,y) == CELL_UNKNOWN)
 		{
 			x++;
-			cell.set_x(x);
-		}
-		if(get_right(cell) == CELL_UNKNOWN)
-		{
-			x++;
-			cell.set_x(x);
+			cell.x = x;
+			cell.y = y;
 			return cell;
 		}
-		else
-		{
-			Error err;
-			err.err_txt = "Ошибка в функции Game::shoot_old. Невозможно убить горизонтальный корабль";
-			throw(err);		
-		}
+
+		Error err;
+		err.err_txt = "Ошибка в функции Game::shoot_old. Невозможно убить горизонтальный корабль";
+		throw(err);		
 	}
-	else if(flag_ver)						//вертикальный корабль
+	else if(is_ver)						//вертикальный корабль
 	{
-		cell.set_x(x);
-		cell.set_y(y);
-		
-		while(get_up(cell) == CELL_WOUND) // двигаемся влево
+		while(my_shoots.get_up(x,y) == CELL_WOUND) // двигаемся влево
+			y--;
+		if(my_shoots.get_up(x,y) == CELL_UNKNOWN)
 		{
 			y--;
-			cell.set_y(y);
-		}
-		if(get_up(cell) == CELL_UNKNOWN)
-		{
-			y--;
-			cell.set_y(y);
+			cell.x = x;
+			cell.y = y;
 			return cell;
 		}
 		
-		y = prev.get_y();
-		cell.set_y(y);
-		while(get_down(cell) == CELL_WOUND) // двигаемся вправо
+		while(my_shoots.get_down(x,y) == CELL_WOUND) // двигаемся вправо
+			y++;
+		if(my_shoots.get_down(x,y) == CELL_UNKNOWN)
 		{
 			y++;
-			cell.set_y(y);
-		}
-		if(get_down(cell) == CELL_UNKNOWN)
-		{
-			y++;
-			cell.set_y(y);
+			cell.x = x;
+			cell.y = y;
 			return cell;
 		}
-		else
-		{
-			Error err;
-			err.err_txt = "Ошибка в функции Game::shoot_old. Невозможно убить горизонтальный корабль";
-			throw(err);		
-		}
+
+		Error err;
+		err.err_txt = "Ошибка в функции Game::shoot_old. Невозможно убить вертикальный корабль";
+		throw(err);		
 	}
 	else		// неизвестно направление корабля
 	{
-		if(get_left(prev) == CELL_UNKNOWN)
+		if(my_shoots.get_left(x,y) == CELL_UNKNOWN)
 		{
-			cell.set_x(x-1);
-			cell.set_y(y);
+			cell.x = x-1;
+			cell.y = y;
 			return cell;
 		}
-		else if(get_up(prev) == CELL_UNKNOWN)
+		else if(my_shoots.get_right(x,y) == CELL_UNKNOWN)
 		{
-			cell.set_x(x);
-			cell.set_y(y-1);
+			cell.x = x+1;
+			cell.y = y;
 			return cell;
 		}
-		else if(get_right(prev) == CELL_UNKNOWN)
+		else if(my_shoots.get_up(x,y) == CELL_UNKNOWN)
 		{
-			cell.set_x(x+1);
-			cell.set_y(y);
+			cell.x = x;
+			cell.y = y-1;
 			return cell;
 		}
-		else if(get_down(prev) == CELL_UNKNOWN)
+		else if(my_shoots.get_down(x,y) == CELL_UNKNOWN)
 		{
-			cell.set_x(x);
-			cell.set_y(y+1);
+			cell.x = x;
+			cell.y = y+1;
 			return cell;
 		}
+
 		else
 		{
 			Error err;
@@ -441,23 +366,22 @@ Cell Game::shoot_old(const Cell& prev)
 
 	
 }
-	
-void Game::update(const Cell& cell)
+
+
+void Game::update(int x, int y, cell_val val)
 {
-	cell_val val;
 	int len;
 	
-	val = cell.get_val();
 	if(val == CELL_EMPTY)
-		my_shoots.set_cell(cell);
+		my_shoots.set_cell(x,y,val);
 	else if(val == CELL_WOUND)
 	{
-		my_shoots.set_cell(cell);
+		my_shoots.set_cell(x,y,val);
 		en_ship_cells --;
 	}
 	else if(val == CELL_KILL)
 	{
-		len = my_shoots.kill(cell);
+		len = my_shoots.kill(x,y);
 		del_ship(len);
 		en_ship_cells --;
 	}
@@ -470,39 +394,33 @@ void Game::update(const Cell& cell)
 	}
 }
 	
-cell_val Game::check(const Cell& cell)
+cell_val Game::check(int x, int y)
 {
+	int res;
 	cell_val val;
-	Cell tmp_cell;
-	int x,y,res;
+	Ship ship;
 	
-	x = cell.get_x();
-	y = cell.get_y();
-	
-	tmp_cell = my_ships.get_cell(x,y);
-	val = tmp_cell.get_val();
+	val = my_ships.get_cell(x,y);
 	
 	if(val == CELL_EMPTY)
 	{
-		en_shoots.set_cell(tmp_cell);
+		en_shoots.set_cell(x,y,val);
 		return CELL_EMPTY;
 	}
-	else if(val == CELL_MY_SHIP || val == CELL_WOUND)
+	else if(val == CELL_SHIP || val == CELL_WOUND)
 	{
 		my_ship_cells --;
-		tmp_cell.set_val(CELL_WOUND);
-		my_ships.set_cell(tmp_cell);
-		res = my_ships.is_killed(tmp_cell);
+		my_ships.set_cell(x,y,CELL_WOUND);
+		res = my_ships.check_killed(x,y,ship);
+		
 		if(res == true)
 		{
-			tmp_cell.set_val(CELL_KILL);
-			en_shoots.kill(tmp_cell);
+			en_shoots.add_ship(ship,CELL_KILL);
 			return CELL_KILL;
 		}
 		else
 		{
-			tmp_cell.set_val(CELL_WOUND);
-			en_shoots.set_cell(tmp_cell);
+			en_shoots.set_cell(x,y,CELL_WOUND);
 			return CELL_WOUND;
 		}
 		
@@ -564,72 +482,4 @@ game_st Game::get_status()
 	 
 	 return GAME_UNKNOWN;
 
-}
-
-cell_val Game::get_left(const Cell& cell)
-{
-	int x,y;
-	Cell tmp_cell;
-	
-	x = cell.get_x();
-	y = cell.get_y();
-	
-	if(x==0)
-		return CELL_EMPTY;
-	else
-	{
-		tmp_cell = my_shoots.get_cell(x-1,y);
-		return tmp_cell.get_val();
-	}		
-}
-
-cell_val Game::get_right(const Cell& cell)
-{
-	int x,y;
-	Cell tmp_cell;
-	
-	x = cell.get_x();
-	y = cell.get_y();
-	
-	if(x==FIELD_SIZE-1)
-		return CELL_EMPTY;
-	else
-	{
-		tmp_cell = my_shoots.get_cell(x+1,y);
-		return tmp_cell.get_val();
-	}
-}
-
-cell_val Game::get_up(const Cell& cell)
-{
-	int x,y;
-	Cell tmp_cell;
-	
-	x = cell.get_x();
-	y = cell.get_y();
-	
-	if(y==0)
-		return CELL_EMPTY;
-	else
-	{
-		tmp_cell = my_shoots.get_cell(x,y-1);
-		return tmp_cell.get_val();
-	}	
-}
-
-cell_val Game::get_down(const Cell& cell)
-{
-	int x,y;
-	Cell tmp_cell;
-	
-	x = cell.get_x();
-	y = cell.get_y();
-	
-	if(y==FIELD_SIZE-1)
-		return CELL_EMPTY;
-	else
-	{
-		tmp_cell = my_shoots.get_cell(x,y+1);
-		return tmp_cell.get_val();
-	}
 }

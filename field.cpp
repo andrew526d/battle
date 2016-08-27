@@ -18,72 +18,188 @@ void Field::fill(cell_val val)
 			buf[i][j] = val;
 }
 
-void Field::set_cell(const Cell& cell)
+void Field::check_coord(int x) const
 {
-	int x,y;
-	cell_val val;
-	
-	x = cell.get_x();
-	y = cell.get_y();
-	val = cell.get_val();
-	
+	if(x < 0 || x >= FIELD_SIZE)
+	{
+		Error err;
+		err.err_txt = "Ошибка в функции Field::check_coord. Недопустимое значение x = " + to_string(x);
+		throw(err);		
+	}
+}
+
+void Field::set_cell(int x, int y, cell_val val)
+{
+	check_coord(x);
+	check_coord(y);
 	buf[x][y] = val;
 }
 
-Cell Field::get_cell(int x, int y) const
+cell_val Field::get_cell(int x, int y) const
 {
-	Cell cell;
-	
-	if(x<0 || x>=FIELD_SIZE || y<0 || y>=FIELD_SIZE)
-	{
-		Error err;
-		err.err_txt = "Ошибка в функции Field::get_cell. Недопустимое значение: x = " + to_string(x) + ", y = " + to_string(y);
-		throw(err);
-	}
-	
-	cell.set_x(x);
-	cell.set_y(y);
-	cell.set_val(buf[x][y]);
-	return cell;
+	check_coord(x);
+	check_coord(y);
+
+	return buf[x][y];
 }
 
-vector<Ship> Field::get_all_psbl(int len)
+cell_val Field::get_right(int x, int y) const
+{
+	check_coord(x);
+	check_coord(y);
+
+	if(x == FIELD_SIZE-1)
+		return CELL_EMPTY;
+	else
+		return buf[x+1][y];
+}
+
+cell_val Field::get_left(int x, int y) const
+{
+	check_coord(x);
+	check_coord(y);
+	
+	if(x == 0)
+		return CELL_EMPTY;
+	else
+		return buf[x-1][y];
+}
+
+cell_val Field::get_up(int x, int y) const
+{
+	check_coord(x);
+	check_coord(y);
+
+	if(y == 0)
+		return CELL_EMPTY;
+	else
+		return buf[x][y-1];
+}
+
+cell_val Field::get_down(int x, int y) const
+{
+	check_coord(x);
+	check_coord(y);
+
+	if(y == FIELD_SIZE-1)
+		return CELL_EMPTY;
+	else
+		return buf[x][y+1];
+}
+
+
+
+void print(const vector<Field> fields)
+{
+	int i,j,k;
+	cell_val val;
+	char c;
+	Field current;
+
+	if(fields.size()==0)
+		return;
+
+	for(k=0;k<fields.size();k++)
+		cout << "  a b c d e f g h i j     ";
+	cout << endl;
+	
+	for(i=0;i<FIELD_SIZE;i++)
+	{
+		for(k=0;k<fields.size();k++)
+		{
+			cout << i << " ";
+			current = fields[k];
+			for(j=0;j<FIELD_SIZE;j++)
+			{
+				val = current.get_cell(j,i);
+				switch(val)
+				{
+					case CELL_EMPTY: c = '-'; break;
+					case CELL_WOUND: c = '+'; break;
+					case CELL_KILL: c = 'X'; break;
+					case CELL_SHIP: c = 'S'; break;
+					case CELL_UNKNOWN: c = '.'; break;
+					default: c = '?';
+				}
+				cout << c << " ";
+			}
+			cout << "    ";
+		}
+		cout << endl;
+	}
+		
+}
+
+bool Field::check_ship(const Ship& ship) const
+{
+	int i,j,x,y,len;
+	direction dir;
+	
+	x = ship.x;
+	y = ship.y;
+	len = ship.len;
+	dir = ship.dir;
+	
+	if(x<0 || y<0 || x>=FIELD_SIZE || y>=FIELD_SIZE)
+		return false;
+	
+	if(dir == DIR_HOR)
+ 	{
+		if(x+len > FIELD_SIZE)
+			return false;
+		
+ 		for(i=x;i<x+len;i++)
+ 			if(buf[i][y] != CELL_UNKNOWN) 
+				return false;
+ 	}
+ 	else
+ 	{
+		if(y+len > FIELD_SIZE)
+			return false;
+
+ 		for(j=y;j<y+len;j++)
+ 			if(buf[x][j] != CELL_UNKNOWN) 
+				return false;
+ 	}
+	return true;
+}
+
+vector<Ship> Field::get_all_psbl(int len) const
 {
 	vector<Ship> psbl;
 	Ship ship;
 	int i,j;
 	
-	ship.set_len(len);
+	ship.len = len;
 	
 	for(i=0;i<FIELD_SIZE;i++)
 		for(j=0;j<FIELD_SIZE;j++)
 		{	
-			ship.set_x(i);
-			ship.set_y(j);
+			ship.x = i;
+			ship.y = j;
 
-			ship.set_dir(DIR_HOR);
+			ship.dir = DIR_HOR;
 			if(check_ship(ship))
 				psbl.push_back(ship);
 
-			ship.set_dir(DIR_VER);
+			ship.dir = DIR_VER;
 			if(check_ship(ship))
-				psbl.push_back(ship);			
-			
+				psbl.push_back(ship);					
 		}
 		
 	return psbl;
 }
 
-void Field::add_ship(const Ship& ship)
+void Field::add_ship(const Ship& ship, cell_val val)
 {
 	int x,y,len,i,j;
  	direction dir;	
  	int xmin, ymin, xmax, ymax;
- 
-	x = ship.get_x();
-	y = ship.get_y();
-	len = ship.get_len();
-	dir = ship.get_dir();
+
+	x = ship.x;
+	y = ship.y;
+	len = ship.len;
+	dir = ship.dir;
 	
  	if(x==0) 
  		xmin = 0;
@@ -130,234 +246,111 @@ void Field::add_ship(const Ship& ship)
  	if(dir == DIR_HOR)
  	{
  		for(i=x;i<x+len;i++)
- 			buf[i][y] = CELL_MY_SHIP;
+ 			buf[i][y] = val;
  	}
  	else
  	{
  		for(j=y;j<y+len;j++)
- 			buf[x][j] = CELL_MY_SHIP;
+ 			buf[x][j] = val;
  	}
 
 }
 
-void print(const vector<reference_wrapper<Field>> &fields)
+
+bool Field::check_killed(int x, int y, Ship &ship) const
 {
-	int i,j,k;
-	cell_val val;
-	char c;
-	Field current;
-	Cell cell;
-
-	if(fields.size()==0)
-		return;
-
-	for(k=0;k<fields.size();k++)
-		cout << "  a b c d e f g h i j     ";
-	cout << endl;
-	
-	for(i=0;i<FIELD_SIZE;i++)
-	{
-		for(k=0;k<fields.size();k++)
-		{
-			cout << i << " ";
-			current = fields[k];
-			for(j=0;j<FIELD_SIZE;j++)
-			{
-				val = current.get_cell(j,i).get_val();
-				switch(val)
-				{
-					case CELL_EMPTY: c = '-'; break;
-					case CELL_WOUND: c = '+'; break;
-					case CELL_KILL: c = 'X'; break;
-					case CELL_MY_SHIP: c = 'S'; break;
-					case CELL_UNKNOWN: c = '.'; break;
-					default: c = '?';
-				}
-				cout << c << " ";
-			}
-			cout << "    ";
-		}
-		cout << endl;
-	}
-		
-}
-
-bool Field::check_ship(const Ship& ship)
-{
-	int i,j,x,y,len;
+	int tmp_x, tmp_y;
+	int ship_x, ship_y, len;
+	bool is_hor = false, is_ver = false;
 	direction dir;
 	
-	x = ship.get_x();
-	y = ship.get_y();
-	len = ship.get_len();
-	dir = ship.get_dir();
 	
-	if(x<0 || y<0 || x>=FIELD_SIZE || y>=FIELD_SIZE)
+	if(buf[x][y] != CELL_SHIP && buf[x][y] != CELL_WOUND)
 		return false;
 	
-	if(dir == DIR_HOR)
- 	{
-		if(x+len > FIELD_SIZE)
-			return false;
-		
- 		for(i=x;i<x+len;i++)
- 			if(buf[i][y] != CELL_UNKNOWN) 
-				return false;
- 	}
- 	else
- 	{
-		if(y+len > FIELD_SIZE)
-			return false;
-
- 		for(j=y;j<y+len;j++)
- 			if(buf[x][j] != CELL_UNKNOWN) 
-				return false;
- 	}
-	return true;
-}
-
-
-bool Field::is_killed(const Cell& cell)
-{
-	int x,y;
+	ship_x = x; ship_y = y, len = 1; dir = DIR_HOR;
 	
 	// проверяем слева
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && x>0)
+	tmp_x = x; tmp_y = y;
+	while(get_left(tmp_x, tmp_y) != CELL_EMPTY  && get_left(tmp_x, tmp_y) != CELL_UNKNOWN)
 	{
-		x--;
-		if(buf[x][y] == CELL_MY_SHIP)
+		tmp_x--;
+		if(buf[tmp_x][tmp_y] == CELL_SHIP)
 			return false;
+		ship_x--;
+		len ++;
+		is_hor = true;
 	}
 	
 	// проверяем справа
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && x<FIELD_SIZE-1)
+	tmp_x = x; tmp_y = y;
+	while(get_right(tmp_x, tmp_y) != CELL_EMPTY  && get_right(tmp_x, tmp_y) != CELL_UNKNOWN)
 	{
-		x++;
-		if(buf[x][y] == CELL_MY_SHIP)
+		tmp_x++;
+		if(buf[tmp_x][tmp_y] == CELL_SHIP)
 			return false;
+		len ++;
+		is_hor = true;
 	}
+	
 	
 	// проверяем сверху
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && y>0)
+	tmp_x = x; tmp_y = y;
+	while(get_up(tmp_x, tmp_y) != CELL_EMPTY && get_up(tmp_x, tmp_y) != CELL_UNKNOWN)
 	{
-		y--;
-		if(buf[x][y] == CELL_MY_SHIP)
+		tmp_y--;
+		if(buf[tmp_x][tmp_y] == CELL_SHIP)
 			return false;
+		ship_y--;
+		len ++;
+		dir = DIR_VER;
+		is_ver = true;
 	}
 	
-	// проверяем справа
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && y<FIELD_SIZE-1)
-	{
-		y++;
-		if(buf[x][y] == CELL_MY_SHIP)
-			return false;
-	}
-
-	return true;
-	
-}
-
-
-int Field::kill(const Cell& cell)
-{	
-	int x,y,len=1,flag_x=0, flag_y=0;
-	int x_min, y_min;
-	direction dir;
-	Ship ship;
-	
-	// проверяем слева
-	x = cell.get_x();
-	y = cell.get_y();
-	x_min = x;
-	y_min = y;
-	while(buf[x][y] != CELL_EMPTY && x>0)
-	{
-		x--;
-		if(buf[x][y] == CELL_WOUND)
-		{
-			len++;
-			dir = DIR_HOR;
-			x_min = x;
-			flag_x = 1;
-		}
-	}
-	
-	// проверяем справа
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && x<FIELD_SIZE-1)
-	{
-		x++;
-		if(buf[x][y] == CELL_WOUND)
-		{
-			len++;
-			dir = DIR_HOR;
-			flag_x = 1;
-		}
-	}
-	
-	// проверяем сверху
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && y>0)
-	{
-		y--;
-		if(buf[x][y] == CELL_WOUND)
-		{
-			len++;
-			dir = DIR_VER;
-			y_min = y;
-			flag_y = 1;
-		}
-	}
 	
 	// проверяем снизу
-	x = cell.get_x();
-	y = cell.get_y();
-	while(buf[x][y] != CELL_EMPTY && y<FIELD_SIZE-1)
+	tmp_x = x; tmp_y = y;
+	while(get_down(tmp_x, tmp_y) != CELL_EMPTY && get_down(tmp_x, tmp_y) != CELL_UNKNOWN)
 	{
-		y++;
-		if(buf[x][y] == CELL_WOUND)
-		{
-			len++;
-			dir = DIR_VER;
-			flag_y = 1;
-		}
+		tmp_y++;
+		if(buf[tmp_x][tmp_y] == CELL_SHIP)
+			return false;
+		len ++;
+		dir = DIR_VER;
+		is_ver = true;
 	}
-	
-	if(flag_x && flag_y)
+
+	if(is_hor && is_ver)
 	{
 		Error err;
-		err.err_txt = "Ошибка в функции Field::kill. Крестообразный корабль";
+		err.err_txt = "Ошибка в функции Field::check_killed. Крестообразный корабль";
 		throw(err);
-		
 	}
 	
-	//  ---- добавляем корабль ----------------
-	ship.set_x(x_min);
-	ship.set_y(y_min);
-	ship.set_len(len);
-	ship.set_dir(dir);
 	
-	cout << x_min << y_min << " " << len << endl;
-	add_ship(ship);
-
-	int i,j;
-	for(i=0;i<FIELD_SIZE;i++)
-		for(j=0;j<FIELD_SIZE;j++)
-			if(buf[i][j] == CELL_MY_SHIP)
-				buf[i][j] = CELL_KILL;
-		
-	return len;
+	ship.x = ship_x;
+	ship.y = ship_y;
+	ship.len = len;
+	ship.dir = dir;
+	return true;	
 }
+
+
+int Field::kill(int x, int y)
+{	
+	Ship ship;
+	buf[x][y] = CELL_WOUND;
+	if(check_killed(x,y,ship) == false)
+	{
+		Error err;
+		err.err_txt = "Ошибка в функции Field::kill. Невозможно убить корабль";
+		throw(err);
+	}
+	
+	add_ship(ship,CELL_KILL);
+	return ship.len;
+}
+
 
 bool Field::get_wound(Cell &cell)
 {
@@ -368,9 +361,8 @@ bool Field::get_wound(Cell &cell)
 		{
 			if(buf[i][j] == CELL_WOUND)
 			{
-				cell.set_x(i);
-				cell.set_y(j);
-				cell.set_val(CELL_WOUND);
+				cell.x = i;
+				cell.y = j;
 				return true;
 			}
 		}
