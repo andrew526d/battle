@@ -19,11 +19,9 @@ public:
 	virtual void lose() = 0;
 };
 
-class Player_TCP: public Player
+class Player_Text: public Player
 {
 public: 
-	Player_TCP(int port);
-	~Player_TCP();
 	Cell ask_cell();
 	cell_val ask_val(Cell cell);
 	void send_val(cell_val val);
@@ -36,12 +34,32 @@ public:
 	void lose();	
 	
 private:
-	void print(string msg);
+	virtual void print(string msg) = 0;
+	virtual string scan() = 0;
 
+};
+
+class Player_TCP: public Player_Text
+{
+public: 
+	Player_TCP(int port);
+	~Player_TCP();
+	
+private:
+	void print(string msg);
+	string scan();
+	
 	int port;
 	int srv_sock;
 	int cl_sock;
 	
+};
+
+class Player_Console: public Player_Text
+{
+private:
+	void print(string msg);
+	string scan();
 };
 
 #endif 

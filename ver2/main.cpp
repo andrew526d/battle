@@ -15,7 +15,8 @@ int main()
 		
 	try
 	{
-		Player_TCP Player1(2001);
+		Player_Console Player1;
+//		Player_TCP Player1(2001);
 		cout << "Подключился первый игрок" << endl;
 		Player_TCP Player2(2002);
 		cout << "Подключился второй игрок" << endl;
