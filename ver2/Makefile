@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall -g -std=c++11
 LDFLAGS=-std=c++11
-SOURCES=player_ssh.cpp arbitr.cpp main.cpp
+SOURCES=player_tcp.cpp arbitr.cpp main.cpp common.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=battle
 
