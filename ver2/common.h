@@ -29,7 +29,7 @@ enum cell_val			//Возможные значения клеток
 enum status
 {
 	ST_FAIL = -1,
-	ST_SUCCESS = 0,
+	ST_OK = 0,
 	ST_END
 };
 

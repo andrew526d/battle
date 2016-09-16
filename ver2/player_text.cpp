@@ -88,24 +88,34 @@ cell_val Player_Text::ask_val(Cell cell)
 			print(instr);
 		}
 		else
+		{
+			en_shoots.set_cell(cell.x, cell.y, (cell_val)val);
+			print_fields();
 			return (cell_val)val;
+		}
 
 	};
 }
 
-void Player_Text::send_val(cell_val val)
+void Player_Text::send_val(Cell cell, cell_val val)
 {	
+	
+	if(val != CELL_EMPTY && val != CELL_WOUND && val != CELL_KILL)
+	{
+		Error err;
+		err.err_txt = "Ошибка в функции Player_Text::send_val. Недопустимое значение val = " + to_string(val);
+		throw(err);
+	}
+	
+	my_shoots.set_cell(cell.x, cell.y, (cell_val)val);
+	print_fields();
+	
 	switch(val)
 	{
 		case CELL_EMPTY: print("Мимо\n"); break;
 		case CELL_WOUND: print("Ранил\n"); break;
 		case CELL_KILL: print("Убил\n"); break;
-		default:
-		{
-			Error err;
-			err.err_txt = "Ошибка в функции Player_Text::send_val. Недопустимое значение val = " + to_string(val);
-			throw(err);
-		}
+		default: break;
 	}
 }
 
@@ -128,6 +138,46 @@ void Player_Text::lose()
 {
 	print("Вы проиграли!\n");
 }
+
+void Player_Text::print_field_line(const Field &f,int n)
+{
+	int j;
+	cell_val val;
+	
+	print(to_string(n) + " ");
+	for(j=0;j<FIELD_SIZE;j++)
+	{
+		val = f.get_cell(j,n);
+		switch(val)
+		{
+			case CELL_EMPTY: print("- "); break;
+			case CELL_WOUND: print("+ "); break;
+			case CELL_KILL: print("X "); break;
+			case CELL_SHIP: print("S "); break;
+			case CELL_UNKNOWN: print(". "); break;
+			default: print("? ");
+		}
+	}
+}
+
+void Player_Text::print_fields()
+{
+	int i;
+
+	print("     Ваши выстрелы          Выстрелы соперника \n");
+	print("  a b c d e f g h i j       a b c d e f g h i j\n");
+	
+	for(i=0;i<FIELD_SIZE;i++)
+	{
+		print_field_line(my_shoots, i);
+		print("    ");
+		print_field_line(en_shoots, i);
+		print("\n");
+	}
+	
+	print("\n");
+}
+
 
 //----------------- Player_TCP ------------
 

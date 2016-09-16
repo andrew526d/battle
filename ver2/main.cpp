@@ -44,7 +44,7 @@ int main()
 						Player2.bad_val(cell,val);
 				}while(res == ST_FAIL);
 	
-				Player1.send_val(val);
+				Player1.send_val(cell, val);
 				res = arb.check_p2_lose();
 			}while(val != CELL_EMPTY && res !=ST_END);
 			if(res == ST_END)
@@ -75,7 +75,7 @@ int main()
 						Player1.bad_val(cell,val);
 				}while(res == ST_FAIL);
 	
-				Player2.send_val(val);
+				Player2.send_val(cell, val);
 				res = arb.check_p1_lose();
 			}while(val != CELL_EMPTY && res !=ST_END);
 			if(res == ST_END)

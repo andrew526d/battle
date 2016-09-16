@@ -28,7 +28,7 @@ status Arbitr::check_p1_cell(Cell cell)
 	if(cell.x < 0 || cell.x > FIELD_SIZE || cell.y < 0 || cell.y > FIELD_SIZE)
 		return ST_FAIL;
 	else
-		return ST_SUCCESS;
+		return ST_OK;
 }
 
 status Arbitr::check_p1_val(Cell cell, cell_val val)
@@ -41,7 +41,7 @@ status Arbitr::check_p1_lose()
 	if(killed1 >= ship_cells)
 		return ST_END;
 	else
-		return ST_SUCCESS;
+		return ST_OK;
 }
 
 status Arbitr::check_p2_cell(Cell cell)
@@ -49,7 +49,7 @@ status Arbitr::check_p2_cell(Cell cell)
 	if(cell.x < 0 || cell.x > FIELD_SIZE || cell.y < 0 || cell.y > FIELD_SIZE)
 		return ST_FAIL;
 	else
-		return ST_SUCCESS;	
+		return ST_OK;	
 }
 
 status Arbitr::check_p2_val(Cell cell, cell_val val)
@@ -62,7 +62,7 @@ status Arbitr::check_p2_lose()
 	if(killed2 >= ship_cells)
 		return ST_END;
 	else
-		return ST_SUCCESS;
+		return ST_OK;
 }
 
 status Arbitr::check_val(Cell cell, cell_val val, cell_val (&field)[FIELD_SIZE][FIELD_SIZE], int &killed)
@@ -86,7 +86,7 @@ status Arbitr::check_val(Cell cell, cell_val val, cell_val (&field)[FIELD_SIZE][
 		if(val == CELL_WOUND || val == CELL_KILL)
 			killed ++;
 		
-		return ST_SUCCESS;
+		return ST_OK;
 	}
 }
   
